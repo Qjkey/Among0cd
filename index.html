@@ -84,7 +84,22 @@ mainButton.onClick(() => {
     mainButton.showProgress();
     mainButton.disable();
 
-    tg.sendData(`${queryId}:${value}`);
+    try {
+        await fetch("https://amongus0cd.alexeysgrokholskiy.workers.dev/", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                query_id: queryId,
+                nick: value
+            })
+        });
+        tg.close();
+        
+    } catch (err) {
+        alert("Ошибка отправки на сервер: " + err.message);
+        mainButton.hideProgress();
+        mainButton.enable();
+    }
 });
 </script>
 </html>
