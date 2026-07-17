@@ -84,14 +84,20 @@ mainButton.onClick(() => {
     mainButton.showProgress();
     mainButton.disable();
 
-    const isCorrect = value.length >= 2;
-
-    tg.answerChatJoinRequestQuery({
-        chat_join_request_query_id: queryId,
-        result: isCorrect ? "approve" : "decline"
-    }, (success) => {
+    try {
+        await fetch("https://amongus0cd.alexeysgrokholskiy.workers.dev/", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            is_mini_app_data: true,
+            query_id: queryId,
+            nick: value
+          })
+        });
         tg.close();
-    });
+    } catch (err) {
+        alert(`Ошибка отправки ${err}`);
+    }
 });
 </script>
 </html>
