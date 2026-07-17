@@ -72,12 +72,12 @@ const queryId = window.location.hash.substring(1) || "no_query_id";
 console.log(queryId);
 mainButton.show(); 
 
-mainButton.onClick(() => {
+mainButton.onClick(async () => {
     const inputField = document.getElementById('guardInput');
     const value = inputField.value.trim();
     
     if (!value) {
-        alert("Напишите свой ник из амонга")
+        alert("Напишите свой ник из амонга");
         return;
     }
 
@@ -96,7 +96,9 @@ mainButton.onClick(() => {
         });
         tg.close();
     } catch (err) {
-        alert(`Ошибка отправки ${err}`);
+        alert(`Ошибка отправки ${err.message || err}`);
+        mainButton.hideProgress();
+        mainButton.enable();
     }
 });
 </script>
