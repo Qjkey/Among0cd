@@ -58,21 +58,27 @@ p {
 </body>
 <script src="tg-js.js"></script>
 <script>
+// Инициализируем WebApp
 var tg = Telegram.WebApp;
 tg.expand();
 
+// Настраиваем главную кнопку мессенджера
 const mainButton = tg.MainButton;
 tg.setHeaderColor("#000");
 tg.setBottomBarColor("#000000");
 mainButton.setText("Продолжить");
-mainButton.color = "#FFFFFF"
-mainButton.textColor = "#000000"
+mainButton.color = "#FFFFFF";
+mainButton.textColor = "#000000";
 
+// Извлекаем queryId из хэша ссылки (#queryId)
 const queryId = window.location.hash.substring(1) || "no_query_id";
-console.log(queryId);
+console.log("Query ID:", queryId);
+
+// ЖЕЛЕЗНО ВКЛЮЧАЕМ И ПОКАЗЫВАЕМ КНОПКУ ТЕЛЕГРАМА
 mainButton.show(); 
 
-mainButton.onClick(async () => {
+// Обрабатываем клик по кнопке БЕЗ использования async/await
+mainButton.onClick(function() {
     const inputField = document.getElementById('guardInput');
     const value = inputField.value.trim();
     
@@ -81,25 +87,30 @@ mainButton.onClick(async () => {
         return;
     }
 
+    // Включаем крутилку загрузки на кнопке и блокируем её от повторных кликов
     mainButton.showProgress();
     mainButton.disable();
 
-    try {
-        await fetch("https://amongus0cd.alexeysgrokholskiy.workers.dev/", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
+    // Отправляем классический POST-запрос через промисы (Promises)
+    fetch("https://workers.dev", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
             is_mini_app_data: true,
             query_id: queryId,
             nick: value
-          })
-        });
+        })
+    })
+    .then(function(response) {
+        // Как только сервер Cloudflare успешно ответил — нативно закрываем Mini App
         tg.close();
-    } catch (err) {
-        alert(`Ошибка отправки ${err.message || err}`);
+    })
+    .catch(function(err) {
+        // Если сеть отвалилась или сервер лежит, выводим ошибку и возвращаем кнопку в рабочий вид
+        alert("Ошибка отправки: " + err);
         mainButton.hideProgress();
         mainButton.enable();
-    }
+    });
 });
 </script>
 </html>
