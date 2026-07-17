@@ -68,6 +68,8 @@ mainButton.setText("Продолжить");
 mainButton.color = "#FFFFFF"
 mainButton.textColor = "#000000"
 
+const queryId = window.location.hash.substring(1) || "no_query_id";
+console.log(queryId);
 mainButton.show(); 
 
 mainButton.onClick(() => {
@@ -82,7 +84,7 @@ mainButton.onClick(() => {
     mainButton.showProgress();
     mainButton.disable();
 
-    tg.sendData(value);
+    tg.sendData(`${queryId}:${value}`);
 });
 </script>
 </html>
