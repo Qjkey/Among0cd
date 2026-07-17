@@ -84,22 +84,14 @@ mainButton.onClick(() => {
     mainButton.showProgress();
     mainButton.disable();
 
-    try {
-        await fetch("https://amongus0cd.alexeysgrokholskiy.workers.dev/", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-                query_id: queryId,
-                nick: value
-            })
-        });
+    const isCorrect = value.length >= 2;
+
+    tg.answerChatJoinRequestQuery({
+        chat_join_request_query_id: queryId,
+        result: isCorrect ? "approve" : "decline"
+    }, (success) => {
         tg.close();
-        
-    } catch (err) {
-        alert("Ошибка отправки на сервер: " + err.message);
-        mainButton.hideProgress();
-        mainButton.enable();
-    }
+    });
 });
 </script>
 </html>
