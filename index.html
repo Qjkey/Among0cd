@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Заявка</title>
+</head>
+<style>
+body {
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+    background-color: #000;
+    text-align: center;
+    align-items: center;
+    background-image: url("bg.png");
+}
+
+input {
+    width: 85%;
+    max-width: 400px;
+    padding: 14px 18px;
+    margin: 20px 0;
+    font-size: 13px;
+    border-radius: 6px;
+    background: #000000;
+    color: #ffffff;
+    border: 1px solid #ffffff;
+    transition: all 0.25s ease-in-out;
+    box-sizing: border-box;
+    outline: none;
+}
+input:focus {
+    border-color: #ffffff;
+}
+input::placeholder {
+    color: #ffffff;
+    transition: opacity 0.2s;
+}
+input:focus::placeholder {
+    opacity: 0.5;
+}
+
+.logo {
+    width: 55%;
+    margin-bottom: 30px;
+    margin-top: 30px;
+}
+
+p {
+    color: #ffffff;
+    font-size: 16px;
+    margin: 0px 10px;
+}
+</style>
+<body>
+<img src="logo.png" class="logo">
+<p>Чтобы войти в группу, введите ниже свой ник из among us</p>
+<input type="text" id="guardInput" placeholder="Нажмите" autocomplete="off">
+</body>
+<script src="tg-js.js"></script>
+<script>
+var tg = Telegram.WebApp;
+tg.expand();
+
+const mainButton = tg.MainButton;
+tg.setHeaderColor("#000");
+tg.setBottomBarColor("#000000");
+mainButton.setText("Продолжить");
+mainButton.color = "#FFFFFF"
+mainButton.textColor = "#000000"
+
+mainButton.show(); 
+
+mainButton.onClick(() => {
+    const inputField = document.getElementById('guardInput');
+    const value = inputField.value.trim();
+    
+    if (!value) {
+        alert("Напишите свой ник из амонга")
+        return;
+    }
+
+    mainButton.showProgress();
+    mainButton.disable();
+
+    tg.sendData(value);
+});
+</script>
+</html>
