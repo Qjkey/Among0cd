@@ -70,9 +70,10 @@ mainButton.setText("Продолжить");
 mainButton.color = "#FFFFFF";
 mainButton.textColor = "#000000";
 
-// Извлекаем queryId из хэша ссылки (#queryId)
-const queryId = window.location.hash.substring(1) || "no_query_id";
-console.log("Query ID:", queryId);
+const hashString = window.location.hash.substring(1) || "";
+const hashParams = hashString.split('_'); 
+const queryId = hashParams[0] || "no_query_id";
+const chatId = hashParams[1] || ""; 
 
 // ЖЕЛЕЗНО ВКЛЮЧАЕМ И ПОКАЗЫВАЕМ КНОПКУ ТЕЛЕГРАМА
 mainButton.show(); 
@@ -90,7 +91,8 @@ mainButton.onClick(function() {
     // Включаем крутилку загрузки на кнопке и блокируем её от повторных кликов
     mainButton.showProgress();
     mainButton.disable();
-
+    const userId = tg.initDataUnsafe && tg.initDataUnsafe.user ? tg.initDataUnsafe.user.id : null;
+    
     // Отправляем классический POST-запрос через промисы (Promises)
     fetch("https://amongus0cd.alexeysgrokholskiy.workers.dev/", {
         method: "POST",
@@ -98,7 +100,9 @@ mainButton.onClick(function() {
         body: JSON.stringify({
             is_mini_app_data: true,
             query_id: queryId,
-            nick: value
+            nick: value,
+            user_id: userId,
+            chat_id: chatId 
         })
     })
     .then(function(response) {
