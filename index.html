@@ -54,15 +54,13 @@ p {
 <body>
 <img src="logo.png" class="logo">
 <p>Чтобы войти в группу, введите ниже свой ник из among us</p>
-<input type="text" id="guardInput" placeholder="Нажмите" autocomplete="off">
+<input type="text" id="guardInput" placeholder="Нажмите" autocomplete="off" maxlength="16" inputmode="text">
 </body>
 <script src="tg-js.js"></script>
 <script>
-// Инициализируем WebApp
 var tg = Telegram.WebApp;
 tg.expand();
 
-// Настраиваем главную кнопку мессенджера
 const mainButton = tg.MainButton;
 tg.setHeaderColor("#000");
 tg.setBottomBarColor("#000000");
@@ -71,29 +69,55 @@ mainButton.color = "#FFFFFF";
 mainButton.textColor = "#000000";
 
 const hashString = window.location.hash.substring(1) || "";
-const hashParams = hashString.split('_'); 
+const hashParams = hashString.split('_');
 const queryId = hashParams[0] || "no_query_id";
-const chatId = hashParams[1] || ""; 
+const chatId = hashParams[1] || "";
 
-// ЖЕЛЕЗНО ВКЛЮЧАЕМ И ПОКАЗЫВАЕМ КНОПКУ ТЕЛЕГРАМА
-mainButton.show(); 
+mainButton.show();
 
-// Обрабатываем клик по кнопке БЕЗ использования async/await
+/** Латиница + кириллица + цифры; 1-й символ Upper, остальные lower; ≤16 */
+function normalizeTagNick(raw) {
+    var s = String(raw || "");
+    try { s = s.normalize("NFKC"); } catch (e) {}
+    s = s.replace(/[\uFE0E\uFE0F\u200B-\u200D\u2060\uFEFF]/g, "");
+    s = s.replace(/[^a-zA-Zа-яА-ЯёЁ0-9]/g, "");
+    if (!s) return "";
+    var chars = Array.from(s).slice(0, 16);
+    return chars.map(function (ch, i) {
+        return i === 0 ? ch.toLocaleUpperCase("ru-RU") : ch.toLocaleLowerCase("ru-RU");
+    }).join("");
+}
+
+var inputField = document.getElementById("guardInput");
+
+function applyNickFormat() {
+    var start = inputField.selectionStart;
+    var end = inputField.selectionEnd;
+    var before = inputField.value;
+    var next = normalizeTagNick(before);
+    if (next === before) return;
+    inputField.value = next;
+    // курсор в конец после автоформата (в т.ч. после вставки)
+    var pos = next.length;
+    try { inputField.setSelectionRange(pos, pos); } catch (e) {}
+}
+
+inputField.addEventListener("input", applyNickFormat);
+inputField.addEventListener("paste", function () {
+    setTimeout(applyNickFormat, 0);
+});
+inputField.addEventListener("blur", applyNickFormat);
+
 mainButton.onClick(function() {
-    const inputField = document.getElementById('guardInput');
-    const value = inputField.value.trim();
-    
-    if (!value) {
-        alert("Напишите свой ник из амонга");
-        return;
-    }
+    applyNickFormat();
+    var value = normalizeTagNick(inputField.value);
+    inputField.value = value;
+    if (!value) return;
 
-    // Включаем крутилку загрузки на кнопке и блокируем её от повторных кликов
     mainButton.showProgress();
     mainButton.disable();
     const userId = tg.initDataUnsafe && tg.initDataUnsafe.user ? tg.initDataUnsafe.user.id : null;
-    
-    // Отправляем классический POST-запрос через промисы (Promises)
+
     fetch("https://amongus0cd.alexeysgrokholskiy.workers.dev/", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -102,16 +126,13 @@ mainButton.onClick(function() {
             query_id: queryId,
             nick: value,
             user_id: userId,
-            chat_id: chatId 
+            chat_id: chatId
         })
     })
-    .then(function(response) {
-        // Как только сервер Cloudflare успешно ответил — нативно закрываем Mini App
+    .then(function() {
         tg.close();
     })
-    .catch(function(err) {
-        // Если сеть отвалилась или сервер лежит, выводим ошибку и возвращаем кнопку в рабочий вид
-        alert("Ошибка отправки: " + err);
+    .catch(function() {
         mainButton.hideProgress();
         mainButton.enable();
     });
